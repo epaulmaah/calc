@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#171717">
+  <title>Calculator</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            phone: "#171717",
+            keynum: "#262626",
+            keyfn: "#3a3a3a",
+            keyop: "#2f2f2f",
+            optext: "#8fb8ff",
+            accent: "#3d7bf7",
+            ink: "#f5f5f5",
+            mute: "#9aa0a6",
+            err: "#ff9d9d",
+          },
+        },
+      },
+    };
+  </script>
+
+  <style type="text/tailwindcss">
+    /* Repeated on all 20 keys, so it lives in the components layer. */
+    @layer components {
+      .key {
+        @apply grid aspect-square cursor-pointer touch-manipulation select-none place-items-center rounded-full bg-keynum p-0 text-[26px] font-medium leading-none text-ink transition duration-150;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      /* JS writes --fit (1 → 0.42) as the number grows. */
+      .result {
+        --fit: 1;
+        @apply w-full overflow-hidden whitespace-nowrap pb-0.5 text-right font-light leading-[1.1] tracking-[-0.5px];
+        font-size: calc(58px * var(--fit));
+      }
+    }
+
+    /* Unlayered so these beat the utility classes above. */
+    .key:active,
+    .key.flash { @apply scale-[0.93] brightness-[1.35]; }
+
+    .calculator .result.error { @apply text-[26px] font-normal tracking-normal text-err; }
+
+    @media (hover: hover) and (pointer: fine) {
+      .key:hover { @apply brightness-[1.15]; }
+    }
+
+    @media (max-height: 720px) {
+      .calculator .keys { @apply gap-[9px] px-4 pb-[calc(16px+env(safe-area-inset-bottom))] pt-1.5; }
+      .calculator .result { @apply text-[length:calc(46px*var(--fit))]; }
+      .calculator .expression { @apply min-h-6 text-[18px] leading-6; }
+      .calculator .key { @apply text-[22px]; }
+      .calculator .key[data-action="op"],
+      .calculator .key[data-action="equals"] { @apply text-[24px]; }
+      .calculator .key[data-value="−"] { @apply text-[26px]; }
+    }
+
+    @media (max-width: 480px) {
+      body { @apply bg-phone; }
+      .calculator { @apply h-[100dvh] w-screen rounded-none shadow-none; }
+    }
+  </style>
+</head>
+<body class="grid h-full place-items-center overflow-hidden bg-[radial-gradient(1100px_700px_at_50%_-10%,#262626,#0a0a0a_65%)] text-ink antialiased">
+  <main class="calculator flex h-[min(850px,100dvh)] w-[min(410px,100vw)] flex-col overflow-hidden rounded-[38px] bg-phone shadow-[0_40px_90px_rgba(0,0,0,.65),inset_0_0_0_1px_rgba(255,255,255,.07)]" aria-label="Calculator">
+    <header class="flex items-center px-[26px] pt-6">
+      <h1 class="text-[15px] font-semibold tracking-[.2px]">Calculator</h1>
+    </header>
+
+    <section class="display flex min-h-0 flex-1 flex-col items-end justify-end gap-2 overflow-hidden px-[26px] pb-3.5 pt-3">
+      <div class="expression w-full overflow-x-auto overflow-y-hidden whitespace-nowrap text-right text-[21px] leading-7 text-mute [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" id="expression" aria-live="polite"></div>
+      <div class="result" id="result" aria-live="polite">0</div>
+    </section>
+
+    <div class="keys grid shrink-0 grid-cols-4 gap-3 px-5 pb-[calc(24px+env(safe-area-inset-bottom))] pt-2.5" id="keys">
+      <button class="key bg-keyfn text-[23px]" data-action="clear" aria-label="Clear">C</button>
+      <button class="key bg-keyfn text-[23px]" data-action="paren" aria-label="Parentheses">( )</button>
+      <button class="key bg-keyfn text-[23px]" data-action="percent" aria-label="Percent">%</button>
+      <button class="key bg-keyop text-[28px] text-optext" data-action="op" data-value="÷" aria-label="Divide">÷</button>
+
+      <button class="key" data-action="digit" data-value="7">7</button>
+      <button class="key" data-action="digit" data-value="8">8</button>
+      <button class="key" data-action="digit" data-value="9">9</button>
+      <button class="key bg-keyop text-[28px] text-optext" data-action="op" data-value="×" aria-label="Multiply">×</button>
+
+      <button class="key" data-action="digit" data-value="4">4</button>
+      <button class="key" data-action="digit" data-value="5">5</button>
+      <button class="key" data-action="digit" data-value="6">6</button>
+      <button class="key bg-keyop text-[30px] text-optext" data-action="op" data-value="−" aria-label="Subtract">−</button>
+
+      <button class="key" data-action="digit" data-value="1">1</button>
+      <button class="key" data-action="digit" data-value="2">2</button>
+      <button class="key" data-action="digit" data-value="3">3</button>
+      <button class="key bg-keyop text-[28px] text-optext" data-action="op" data-value="+" aria-label="Add">+</button>
+
+      <button class="key bg-keyfn text-[23px]" data-action="sign" aria-label="Toggle sign">±</button>
+      <button class="key" data-action="digit" data-value="0">0</button>
+      <button class="key" data-action="dot" aria-label="Decimal point">.</button>
+      <button class="key bg-accent text-[30px] text-white" data-action="equals" aria-label="Equals">=</button>
+    </div>
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>
